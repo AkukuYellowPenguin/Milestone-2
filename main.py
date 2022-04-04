@@ -96,6 +96,12 @@ def q4(spark_context: SparkContext, on_server):
     lines = streaming_context.socketTextStream(hostname, 9000)
 
     # TODO: Implement Q4 here.
+    total_address_count = lines.window(20,4).count()
+    distinct_address = lines.map(lambda address: (address, 1))
+    distinct_address_count = distinct_address.reduceByKeyAndWindow(lambda a1, a2: a1+a2, lambda a1, a2: a1-a2, 20, 4)
+    address_frequency = distinct_address_count.transformWith(lambda a1, a2: a1.cartesian(a2), total_address_count).map(lambda x: (x[0][0], x[0][1]/x[1]))
+    result = address_frequency.filter(lambda freq: 0.03 < freq[1])
+    result.foreachRDD(lambda x: x.foreach(lambda y: print(f">> [q4: {y[0][0]}, {y[0][1]}]")))
 
     # Start the streaming context, run it for two minutes or until termination
     streaming_context.start()
