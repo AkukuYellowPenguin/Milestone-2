@@ -1,6 +1,7 @@
 from pyspark import SparkConf, SparkContext, RDD
 from pyspark.sql import SparkSession
 from pyspark.streaming import StreamingContext
+import pandas as pd
 
 
 def get_spark_context(on_server) -> SparkContext:
@@ -64,6 +65,18 @@ def q1(spark_context: SparkContext, on_server) -> RDD:
 
 def q2(spark_context: SparkContext, q1_rdd: RDD):
     spark_session = SparkSession(spark_context)
+
+    data_frame = q1_rdd.map(lambda r:Row(r)).toDF(["RelationName"])
+    data_frame = data_frame.select(split(data_frame.RelationName,",")).rdd.flatMap(lambda x: x).toDF(schema =['rel','name','no'])
+    q21 = data_frame.filter(col("rel") == 'R').count()
+    q22 = data_frame.groupBy(["name"]).agg(countDistinct("no"))
+    q23 = q22.filter(col("count(no)")>=1000)
+    q23_1 = q23.count()
+    q22_1 = q22.agg(min(col("count(no)"))).take(1)
+
+    print(">> [q21: " + str(q21) + "]")
+    print(">> [q22: " + str(q22_1) + "]")
+    print(">> [q23: " + str(q23_1) + "]")
 
     # TODO: Implement Q2 here.
 
