@@ -21,6 +21,24 @@ def row_flatmap(x):
     
     return l
 
+def make_key(x):
+    #get first and second column of row
+    first_column = x.split(",")[0]
+    second_column = x.split(",")[1]
+    
+    #combine first and second column into one string
+    l = []
+    for i in range(len(first_column)):
+        l.append(first_column + "." + second_column)
+        
+    #return key element
+    return l[0]
+
+def get_sorted(x):
+    list(set(x))
+    x.sort()
+    return ",".join(x)
+
 def q1(spark_context: SparkContext, on_server) -> RDD:
     database_file_path = "/Database.csv" if on_server else "Database.csv"
 
@@ -51,8 +69,23 @@ def q2(spark_context: SparkContext, q1_rdd: RDD):
 
 
 def q3(spark_context: SparkContext, q1_rdd: RDD):
-    return False
     # TODO: Implement Q3 here.
+
+    #create rdd with first two columns as key
+    q3_rdd = q1_rdd.map(lambda x: (make_key(x), [x.split(",")[2]]))
+    #gather all values per key
+    q3_rdd_reduced = q3_rdd.reduceByKey(lambda x, y: x + y)
+
+    #switch key with values
+    q3_rdd_switched = q3_rdd_reduced.map(lambda x : (get_sorted(x[1]), [x[0]]))
+    #look for keys that are the same and gather only elements with value list size of > 1
+    q3_rdd_result = q3_rdd_switched.reduceByKey(lambda x, y: x + y).filter(lambda x: len(x[1]) > 1) 
+    result = q3_rdd_result.collect()
+
+    #print result in correct format
+    for i in result:
+        print(">> [q3: " + i[1][0]+ "," + i[1][1] + "]")
+
 
 
 def q4(spark_context: SparkContext, on_server):
