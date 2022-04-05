@@ -121,6 +121,11 @@ def q3(spark_context: SparkContext, q1_rdd: RDD):
                 print(">> [q3: " + i[0]+ "," + i[j+1] + "]")
 
 
+def print_rdd(rdd):
+    for x in rdd.collect():
+            print(f">> [q4: {x[0]}, {x[1]}]")
+
+
 def q4(spark_context: SparkContext, on_server):
     streaming_context = StreamingContext(spark_context, 2)
     streaming_context.checkpoint("checkpoint")
@@ -133,8 +138,8 @@ def q4(spark_context: SparkContext, on_server):
     distinct_address = lines.map(lambda address: (address, 1))
     distinct_address_count = distinct_address.reduceByKeyAndWindow(lambda a1, a2: a1+a2, lambda a1, a2: a1-a2, 20, 4)
     address_frequency = distinct_address_count.transformWith(lambda a1, a2: a1.cartesian(a2), total_address_count).map(lambda x: (x[0][0], x[0][1]/x[1]))
-    result = address_frequency.filter(lambda freq: 0.03 < freq[1])
-    result.foreachRDD(lambda x: x.foreach(lambda y: print(f">> [q4: {y[0]}, {y[1]}]")))
+    result = address_frequency.filter(lambda x: x[1] >= 0.03)
+    result.foreachRDD(print_rdd)
 
     # Start the streaming context, run it for two minutes or until termination
     streaming_context.start()
