@@ -1,6 +1,6 @@
 from pyspark import SparkConf, SparkContext, RDD
 from pyspark.sql import SparkSession,Row
-from pyspark.sql import col,split,countDistinct,min
+from pyspark.sql.functions import col,split,countDistinct,min
 from pyspark.streaming import StreamingContext
 import pandas as pd
 
