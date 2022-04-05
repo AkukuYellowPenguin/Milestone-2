@@ -123,8 +123,9 @@ def q3(spark_context: SparkContext, q1_rdd: RDD):
 
 def print_rdd(rdd):
     for x in rdd.collect():
-            print(f">> [q4: {x[0]}, {x[1]}]")
-
+        a = x[0][0]
+        b = x[0][1]/x[1]
+        print(f">> [q4: {a}, {b}]")
 
 def q4(spark_context: SparkContext, on_server):
     streaming_context = StreamingContext(spark_context, 2)
@@ -137,8 +138,8 @@ def q4(spark_context: SparkContext, on_server):
     total_address_count = lines.window(20,4).count()
     distinct_address = lines.map(lambda address: (address, 1))
     distinct_address_count = distinct_address.reduceByKeyAndWindow(lambda a1, a2: a1+a2, lambda a1, a2: a1-a2, 20, 4)
-    address_frequency = distinct_address_count.transformWith(lambda a1, a2: a1.cartesian(a2), total_address_count).map(lambda x: (x[0][0], x[0][1]/x[1]))
-    result = address_frequency.filter(lambda x: x[1] >= 0.03)
+    address_frequency = distinct_address_count.transformWith(lambda a1, a2: a1.cartesian(a2), total_address_count)
+    result = address_frequency.filter(lambda x: x[0][1]/x[1] >= 0.03)
     result.foreachRDD(print_rdd)
 
     # Start the streaming context, run it for two minutes or until termination
@@ -151,16 +152,16 @@ def q4(spark_context: SparkContext, on_server):
 # To skip executing a question while developing a solution, simply comment out the corresponding function call.
 if __name__ == '__main__':
 
-    on_server = False  # TODO: Set this to true if and only if running on the server
+    on_server = True  # TODO: Set this to true if and only if running on the server
 
     spark_context = get_spark_context(on_server)
 
     q1_rdd = q1(spark_context, on_server)
 
-    # q2(spark_context, q1_rdd)
+    q2(spark_context, q1_rdd)
 
     q3(spark_context, q1_rdd)
 
-    #q4(spark_context, on_server)
+    q4(spark_context, on_server)
 
     spark_context.stop()
