@@ -137,10 +137,10 @@ if __name__ == '__main__':
 
     q1_rdd = q1(spark_context, on_server)
 
-    # q2(spark_context, q1_rdd)
+    q2(spark_context, q1_rdd)
 
-    # q3(spark_context, q1_rdd)
+    q3(spark_context, q1_rdd)
 
-    # q4(spark_context, on_server)
+    q4(spark_context, on_server)
 
     spark_context.stop()
