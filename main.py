@@ -36,7 +36,9 @@ def make_key(x):
     return l[0]
 
 def get_sorted(x):
-    list(set(x))
+    #delete duplicates
+    x = list(dict.fromkeys(x))
+    #sort list
     x.sort()
     return ",".join(x)
 
