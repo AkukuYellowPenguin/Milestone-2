@@ -1,8 +1,7 @@
 from pyspark import SparkConf, SparkContext, RDD
 from pyspark.sql import SparkSession,Row
-from pyspark.sql import col,split,countDistinct,min
+from pyspark.sql.functions import col,split,countDistinct,min
 from pyspark.streaming import StreamingContext
-import pandas as pd
 
 
 def get_spark_context(on_server) -> SparkContext:
@@ -42,7 +41,7 @@ def get_sorted(x):
     return ",".join(x)
 
 def q1(spark_context: SparkContext, on_server) -> RDD:
-    database_file_path = "/Database.csv" if on_server else "Database.csv"
+    database_file_path = "/Database.csv" if on_server else "C:/Users/20192435/Downloads/2ID70-2022-MS2-Data-Small/Database.csv"
 
     # TODO: You may change the value for the minPartitions parameter (template value 160) when running locally.
     # It is advised (but not compulsory) to set the value to 160 when running on the server.
@@ -51,6 +50,7 @@ def q1(spark_context: SparkContext, on_server) -> RDD:
     # TODO: Implement Q1 here by defining q1RDD based on databaseRDD.
     header = database_rdd.first()
     q1_rdd = database_rdd.filter(lambda x: x != header)
+    q1_rdd = q1_rdd.flatMap(lambda x: row_flatmap(x))
     q1s_rdd = q1_rdd.filter(lambda x: x[0] == 'S')
     s = q1s_rdd.count()
     q1t_rdd = q1_rdd.filter(lambda x: x[0] == 'T')
@@ -132,15 +132,15 @@ def q4(spark_context: SparkContext, on_server):
 # To skip executing a question while developing a solution, simply comment out the corresponding function call.
 if __name__ == '__main__':
 
-    on_server = True  # TODO: Set this to true if and only if running on the server
+    on_server = False  # TODO: Set this to true if and only if running on the server
 
     spark_context = get_spark_context(on_server)
 
-    q1_rdd = q1(spark_context, on_server)
+    # q1_rdd = q1(spark_context, on_server)
 
-    q2(spark_context, q1_rdd)
+    # q2(spark_context, q1_rdd)
 
-    q3(spark_context, q1_rdd)
+    # q3(spark_context, q1_rdd)
 
     q4(spark_context, on_server)
 
