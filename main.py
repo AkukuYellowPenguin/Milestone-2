@@ -40,7 +40,7 @@ def get_sorted(x):
     x = list(dict.fromkeys(x))
     #sort list
     x.sort()
-    return ",".join(x)
+    return x
 
 def q1(spark_context: SparkContext, on_server) -> RDD:
     database_file_path = "/Database.csv" if on_server else "C:/Users/20192435/Downloads/2ID70-2022-MS2-Data-Small/Database.csv"
@@ -93,20 +93,32 @@ def q3(spark_context: SparkContext, q1_rdd: RDD):
     # TODO: Implement Q3 here.
 
     #create rdd with first two columns as key
-    q3_rdd = q1_rdd.map(lambda x: (make_key(x), [x.split(",")[2]]))
+    q3_rdd = q1_rdd.map(lambda x: (x.split(",")[2], [make_key(x)]))
     #gather all values per key
     q3_rdd_reduced = q3_rdd.reduceByKey(lambda x, y: x + y)
 
-    #switch key with values
-    q3_rdd_switched = q3_rdd_reduced.map(lambda x : (get_sorted(x[1]), [x[0]]))
     #look for keys that are the same and gather only elements with value list size of > 1
-    q3_rdd_result = q3_rdd_switched.reduceByKey(lambda x, y: x + y).filter(lambda x: len(x[1]) > 1) 
+    q3_rdd_result = q3_rdd_reduced.map(lambda x: (x[0], get_sorted(x[1]))).filter(lambda x: len(x[1]) > 1) 
     result = q3_rdd_result.collect()
 
-    #print result in correct format
+    #get only Relations and letter from result
+    result_full = []
     for i in result:
-        print(">> [q3: " + i[1][0]+ "," + i[1][1] + "]")
+        result_full.append(i[1])
 
+    #take out any duplicates
+    result_new = []
+    for i in result_full:
+        if i not in result_new:
+            result_new.append(i)
+
+    #print result in correct format
+    for i in result_new:
+        if len(i) == 2:  
+            print(">> [q3: " + i[0]+ "," + i[1] + "]")
+        else:
+            for j in range(len(i)-1):
+                print(">> [q3: " + i[0]+ "," + i[j+1] + "]")
 
 
 def q4(spark_context: SparkContext, on_server):
@@ -138,12 +150,12 @@ if __name__ == '__main__':
 
     spark_context = get_spark_context(on_server)
 
-    # q1_rdd = q1(spark_context, on_server)
+    q1_rdd = q1(spark_context, on_server)
 
     # q2(spark_context, q1_rdd)
 
-    # q3(spark_context, q1_rdd)
+    q3(spark_context, q1_rdd)
 
-    q4(spark_context, on_server)
+    #q4(spark_context, on_server)
 
     spark_context.stop()
