@@ -15,8 +15,8 @@ def row_flatmap(x):
     attr = elements[1].split(';')
     num = elements[2].split(';')
     l = []
-
-    for i in range(0,5):
+    n = len(attr)
+    for i in range(0,n):
         l.append(elements[0] + ',' + attr[i] + ',' + num[i])
 
     
