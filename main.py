@@ -68,15 +68,20 @@ def q2(spark_context: SparkContext, q1_rdd: RDD):
 
     data_frame = q1_rdd.map(lambda r:Row(r)).toDF(["RelationName"])
     data_frame = data_frame.select(split(data_frame.RelationName,",")).rdd.flatMap(lambda x: x).toDF(schema =['rel','name','no'])
-    q21 = data_frame.filter(col("rel") == 'R').count()
-    q22 = data_frame.groupBy(["name"]).agg(countDistinct("no"))
-    q23 = q22.filter(col("count(no)")>=1000)
+    #a
+    q21 = data_frame.where(col("rel") == 'R').count()
+    #b
+    q22 = data_frame.groupBy(["rel","name"]).agg(countDistinct("no"))
+    q23 = q22.where(col("count(no)")>=1000)
     q23_1 = q23.count()
-    q22_1 = q22.agg(min(col("count(no)"))).take(1)
-
+    #c
+    q24 = q22.orderBy("count(no)",ascending = True).first()
+    q24_rel = q24[0]
+    q24_name = q24[1]
+    #print
     print(">> [q21: " + str(q21) + "]")
-    print(">> [q22: " + str(q22_1) + "]")
-    print(">> [q23: " + str(q23_1) + "]")
+    print(">> [q22: " + str(q23_1) + "]")
+    print(">> [q23: " + str(q24_rel) +"." + str(q24_name) + "]")
 
     # TODO: Implement Q2 here.
 
